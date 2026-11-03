@@ -4,10 +4,10 @@ import SectionHeader from "@/components/ui/SectionHeader";
 import VideoCard from "@/components/ui/VideoCard";
 import Stars from "@/components/ui/Stars";
 import Testimonials from "@/components/sections/Testimonials";
-import { works } from "@/lib/data";
+import { brand, works } from "@/lib/data";
 
 export const metadata: Metadata = {
-  title: "Our Works — ClipCut",
+  title: `Our Works — ${brand.name}`,
   description: works.description,
 };
 

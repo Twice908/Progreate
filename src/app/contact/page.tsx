@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import PageMotion from "@/components/motion/PageMotion";
 import ContactForm from "@/components/sections/ContactForm";
 import { Mail, Phone, CheckBadge } from "@/components/ui/Icons";
-import { contact } from "@/lib/data";
+import { brand, contact } from "@/lib/data";
 
 export const metadata: Metadata = {
-  title: "Contact — ClipCut",
+  title: `Contact — ${brand.name}`,
   description: contact.title,
 };
 

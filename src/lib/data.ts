@@ -1,9 +1,9 @@
 /**
- * All site copy lives here, verbatim from the ClipCut template.
+ * All site copy lives here, verbatim from the original template (brand name aside).
  * Edit this file to change text later — components only render what is defined here.
  */
 
-export const brand = { name: "ClipCut" } as const;
+export const brand = { name: "Progreate.co" } as const;
 
 export const nav = {
   links: [
@@ -284,7 +284,7 @@ export const footer = {
       { label: "X", href: "https://x.com" },
     ],
   },
-  copyright: "© 2026 ClipCut. All rights reserved",
+  copyright: "© 2026 Progreate.co. All rights reserved",
   credit: { label: "Created by", name: "Sabbir Hossien", href: "https://x.com/sabbir_h_dm" },
   powered: { label: "Powered by", name: "Framer", href: "https://www.framer.com" },
 };
@@ -312,13 +312,13 @@ export const contact = {
     "Improve retention & engagement",
     "Turn views into real business results",
   ],
-  email: "hello@clipcut.info",
+  email: "hello@progreate.co",
   phone: "+ (212) 555-0198",
   form: {
     fields: [
       { name: "name", label: "Your Name", placeholder: "Your Name", type: "text" },
       { name: "email", label: "Your Work Email", placeholder: "joss@vidgenie.com", type: "email" },
-      { name: "company", label: "Company Name", placeholder: "ClipCut", type: "text" },
+      { name: "company", label: "Company Name", placeholder: "Progreate.co", type: "text" },
       { name: "subject", label: "Subject of Message", placeholder: "Video Import", type: "text" },
     ],
     message: { label: "Message", placeholder: "Anything else you'd like to share with the Vidgenie team..." },

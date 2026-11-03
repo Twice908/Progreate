@@ -4,6 +4,7 @@ import "./globals.css";
 import SmoothScroll from "@/components/providers/SmoothScroll";
 import Navbar from "@/components/layout/Navbar";
 import CtaFooter from "@/components/layout/CtaFooter";
+import { brand } from "@/lib/data";
 
 // Body / UI face (same as the template).
 const bricolage = Bricolage_Grotesque({
@@ -21,7 +22,7 @@ const displayFace = Hanken_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "ClipCut — Short-form Video Editing Agency",
+  title: `${brand.name} — Short-form Video Editing Agency`,
   description:
     "We turn your raw clips into high-performing Reels, TikToks, and Shorts — designed to grab attention, boost engagement, and grow your audience faster.",
 };

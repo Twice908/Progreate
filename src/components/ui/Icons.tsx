@@ -2,7 +2,7 @@ import type { SVGProps } from "react";
 
 type P = SVGProps<SVGSVGElement>;
 
-/** ClipCut mark: rounded block with a four-point sparkle cut-out and a dot. */
+/** Brand mark: rounded block with a four-point sparkle cut-out and a dot. */
 export function Logo(props: P) {
   return (
     <svg viewBox="0 0 24 24" fill="none" aria-hidden {...props}>

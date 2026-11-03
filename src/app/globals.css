@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /*
- * ClipCut design tokens — measured from the live template.
+ * Design tokens — measured from the live template.
  * Breakpoints mirror Framer's: phone < 810, tablet 810–1199, desktop ≥ 1200.
  */
 @theme {

@@ -80,30 +80,18 @@ export default function CtaFooter() {
 
           <div className="mt-8 flex flex-col justify-between gap-3 text-[14px] leading-[19.6px] tracking-[-0.04em] text-white/70 md:flex-row md:items-start">
             <p>{footer.copyright}</p>
-            <div className="md:text-right">
-              <p>
-                {footer.credit.label}{" "}
-                <a href={footer.credit.href} target="_blank" rel="noopener noreferrer" className="text-clay hover:text-white">
-                  {footer.credit.name}
-                </a>
-              </p>
-              <p>
-                {footer.powered.label}{" "}
-                <a href={footer.powered.href} target="_blank" rel="noopener noreferrer" className="text-clay hover:text-white">
-                  {footer.powered.name}
-                </a>
-              </p>
-            </div>
+          
           </div>
         </div>
 
         {/* Oversized wordmark, fading into the page edge */}
-        <div aria-hidden className="relative -mt-4 select-none overflow-hidden md:-mt-10">
+        <div aria-hidden className="relative mt-3 select-none overflow-hidden [container-type:inline-size] md:-mt-3">
           <Stars count={14} seed={5} />
           <p
             className="stripes-text pointer-events-none whitespace-nowrap text-center font-display font-medium leading-[0.82] tracking-[-0.04em]"
             style={{
-              fontSize: "clamp(120px, 30vw, 430px)",
+              // Sized from the container's width so the whole name always fits (measured: text ≈ 5.24em wide).
+              fontSize: "calc(90cqw / 5.24)",
               backgroundImage:
                 "repeating-linear-gradient(90deg, rgb(0 0 0 / 0.35) 0 5px, transparent 5px 12px), linear-gradient(180deg, #ff6a2a 0%, #a8340f 55%, rgb(60 20 6 / 0) 100%)",
               WebkitBackgroundClip: "text",
