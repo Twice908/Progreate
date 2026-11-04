@@ -4,19 +4,22 @@ import { useRef } from "react";
 import { claimMotion, gsap, SplitText, useGSAP } from "@/lib/gsap";
 import { hero } from "@/lib/data";
 import Button from "@/components/ui/Button";
-import Media from "@/components/ui/Media";
 import Stars from "@/components/ui/Stars";
 import { Sparkle } from "@/components/ui/Icons";
+import HeroCarousel, { type CarouselItem } from "./HeroCarousel";
 
-/** width/height at the 1440px design, plus perspective tilt and placeholder hue. */
-const stage = [
-  { w: 330, h: 470, r: 24, hue: 285 },
-  { w: 175, h: 266, r: 14, hue: 32 },
-  { w: 133, h: 194, r: 8, hue: 20 },
-  { w: 122, h: 175, r: 0, hue: 60 },
-  { w: 133, h: 196, r: -8, hue: 150 },
-  { w: 176, h: 268, r: -14, hue: 215 },
-  { w: 330, h: 450, r: -24, hue: 18 },
+/**
+ * Placeholder showcase cards. Add `src` to any item to show a real photo/video poster instead
+ * (7 distinct items keep every card in the visible composition unique).
+ */
+const showcase: CarouselItem[] = [
+  { hue: 285 },
+  { hue: 32 },
+  { hue: 20 },
+  { hue: 60 },
+  { hue: 150 },
+  { hue: 215 },
+  { hue: 18 },
 ];
 
 const tagIcons = [
@@ -37,6 +40,53 @@ const tagIcons = [
   </svg>,
 ];
 
+/*
+ * The orange "Glow" from the original design: a 990×955 box holding FOUR concentric circles, shaded in
+ * different oranges so each layer reads as its own ring, with only the upper half visible (the lower half
+ * dissolves). Radii, colours, per-circle opacity falloff and the fade were fitted to the original glow
+ * component (RMS ≈ 2% of 255). In the hero, ~37% of the box's width hangs off the left edge and ~22% off
+ * the top, so only the remaining part is seen. Fixed px — it does not scale with the viewport, like the original.
+ */
+const GLOW_W = 990;
+const GLOW_H = 955;
+const GLOW_CX = GLOW_W / 2; // all four circles share the box centre
+const GLOW_CY = GLOW_H / 2;
+// Offset of the box from the hero's top-left (negative = overflowing/hidden). Best fit to the real hero is
+// −364 / −212 (36.8% / 22.2%); set −396 / −191 for exactly 40% / 20%.
+const GLOW_LEFT = -364;
+const GLOW_TOP = -212;
+
+type GlowCircle = {
+  r: number; // radius, px
+  rgb: [number, number, number];
+  alpha: [number, number, number, number]; // opacity at 0 / 50 / 85 / 100% of the circle's gradient
+  center: [number, number]; // gradient centre relative to the circle's centre (a spotlight above the middle)
+};
+// Outermost first, so inner circles paint on top. Colours are the original palette nudged toward the
+// saturation visible in the live hero.
+const GLOW_CIRCLES: GlowCircle[] = [
+  { r: 391, rgb: [255, 99, 7], alpha: [1.0, 0.4, 0.05, 0.02], center: [40, -204] },
+  { r: 333, rgb: [224, 89, 4], alpha: [0.75, 0.72, 0.02, 0], center: [-6, -225] },
+  { r: 287, rgb: [222, 102, 8], alpha: [1.0, 0.53, 0, 0.02], center: [-60, -288] },
+  { r: 238, rgb: [255, 121, 13], alpha: [1.0, 0.28, 0, 0], center: [7, -19] },
+];
+
+const circleGradient = ({ r, rgb: [R, G, B], alpha, center: [gx, gy] }: GlowCircle) =>
+  `radial-gradient(circle ${(r * 1.15).toFixed(1)}px at ${(r + gx).toFixed(1)}px ${(r + gy).toFixed(1)}px, ${[0, 50, 85, 100]
+    .map((stop, i) => `rgb(${R} ${G} ${B} / ${alpha[i]}) ${stop}%`)
+    .join(", ")})`;
+
+/** Eased (smoothstep) vertical fade: fully visible down to `from`, gone by `to` (px from the box top). */
+const smoothFade = (from: number, to: number) => {
+  const steps = Array.from({ length: 11 }, (_, i) => {
+    const t = i / 10;
+    return `rgb(0 0 0 / ${(1 - t * t * (3 - 2 * t)).toFixed(3)}) ${(from + (to - from) * t).toFixed(1)}px`;
+  });
+  return `linear-gradient(180deg, #000 0px, ${steps.join(", ")}, transparent ${GLOW_H}px)`;
+};
+// Opaque down to 182px above the centre, gone 185px below it.
+const GLOW_MASK = smoothFade(GLOW_CY - 182, GLOW_CY + 185);
+
 export default function Hero() {
   const root = useRef<HTMLElement>(null);
 
@@ -52,24 +102,22 @@ export default function Hero() {
         const split = SplitText.create(title, { type: "words" });
         gsap.set([...el.querySelectorAll("[data-intro]"), title], { opacity: 1 });
 
-        const cards = gsap.utils.toArray<HTMLElement>("[data-hero-card]", el);
         const tl = gsap.timeline({ defaults: { ease: "power3.out" }, delay: 0.1 });
         tl.from("[data-intro='badge']", { opacity: 0, y: 16, duration: 0.7 })
           .from(split.words, { opacity: 0, y: 26, filter: "blur(14px)", duration: 1, stagger: 0.07, clearProps: "filter,transform" }, "-=0.35")
           .from("[data-intro='desc']", { opacity: 0, y: 20, filter: "blur(8px)", duration: 0.9, clearProps: "filter,transform" }, "-=0.55")
           .from("[data-intro='cta']", { opacity: 0, y: 18, duration: 0.8 }, "-=0.6")
-          .from(cards, { opacity: 0, y: 140, scale: 0.92, duration: 1.3, stagger: { each: 0.09, from: "center" }, ease: "expo.out" }, "-=0.7")
+          .from("[data-intro='stage']", { opacity: 0, y: 120, duration: 1.3, ease: "expo.out" }, "-=0.7")
           .from("[data-intro='tags']", { opacity: 0, y: 24, duration: 0.9 }, "-=0.7");
 
-        // Cards drift upward slightly as the hero scrolls away.
+        // Carousel drifts up a touch as the hero scrolls away; the glow trails behind at a slower pace.
         gsap.to("[data-hero-stage]", {
           yPercent: -8,
           ease: "none",
           scrollTrigger: { trigger: el, start: "top top", end: "bottom top", scrub: true },
         });
-        // Glow follows scroll a touch slower than the content.
         gsap.to("[data-hero-glow]", {
-          yPercent: 18,
+          yPercent: 8,
           ease: "none",
           scrollTrigger: { trigger: el, start: "top top", end: "bottom top", scrub: true },
         });
@@ -87,26 +135,44 @@ export default function Hero() {
   );
 
   return (
-    <section ref={root} className="relative isolate overflow-hidden pb-24 pt-[140px] md:pb-32 md:pt-[196px]">
-      {/* Backdrop: ember glow, soft haze, pinstripes, stars */}
-      <div aria-hidden className="absolute inset-0 -z-10">
-        <div data-hero-glow className="absolute -left-[260px] -top-[330px] size-[990px] md:-left-[300px]">
-          <div
-            className="absolute inset-0 rounded-full blur-[36px]"
-            style={{
-              background:
-                "radial-gradient(circle at 50% 50%, rgb(255 112 36) 0%, rgb(250 97 20 / 0.85) 24%, rgb(214 70 14 / 0.4) 46%, transparent 66%)",
-            }}
-          />
-          <div
-            className="absolute inset-0 rounded-full opacity-60 mix-blend-multiply"
-            style={{ background: "repeating-radial-gradient(circle at 50% 50%, rgb(0 0 0 / 0.0) 0 40px, rgb(0 0 0 / 0.28) 40px 70px)" }}
-          />
-        </div>
+    // overflow-x only: glows may spill *down* past the section edge so it blends into the next section.
+    <section ref={root} className="relative isolate overflow-x-clip pb-24 pt-[140px] md:pb-32 md:pt-[196px]">
+      {/* Backdrop */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
+        {/* Orange Glow: four concentric circles, upper half visible, left/top partly outside the hero */}
         <div
-          className="absolute left-1/2 top-[160px] h-[570px] w-[809px] -translate-x-1/2 rounded-full blur-[60px]"
-          style={{ background: "radial-gradient(50% 50% at 50% 50%, rgb(150 52 18 / 0.45) 0%, transparent 100%)" }}
+          data-hero-glow
+          className="absolute"
+          style={{ left: GLOW_LEFT, top: GLOW_TOP, width: GLOW_W, height: GLOW_H, maskImage: GLOW_MASK, WebkitMaskImage: GLOW_MASK }}
+        >
+          {GLOW_CIRCLES.map((c) => (
+            <div
+              key={c.r}
+              className="absolute rounded-full"
+              style={{ left: GLOW_CX - c.r, top: GLOW_CY - c.r, width: c.r * 2, height: c.r * 2, backgroundImage: circleGradient(c) }}
+            />
+          ))}
+        </div>
+
+        {/* Warm haze behind the headline */}
+        <div
+          className="absolute left-1/2 top-[29px] h-[840px] w-[1040px] -translate-x-1/2"
+          style={{
+            backgroundImage:
+              "radial-gradient(closest-side, rgb(139 64 28 / 0.45) 0%, rgb(139 64 28 / 0.38) 35%, rgb(139 64 28 / 0.09) 69%, transparent 100%)",
+          }}
         />
+
+        {/* Wide ember glow that straddles the bottom edge: its lower half lights the next section,
+            so there is no seam where the hero ends. Radial and fully transparent at its own edges. */}
+        <div
+          className="absolute bottom-0 left-1/2 h-[760px] w-[min(1700px,170%)] -translate-x-1/2 translate-y-1/2"
+          style={{
+            backgroundImage:
+              "radial-gradient(closest-side, rgb(178 66 22 / 0.28) 0%, rgb(150 52 16 / 0.15) 38%, rgb(120 40 12 / 0.05) 68%, transparent 100%)",
+          }}
+        />
+
         <div className="stripes absolute inset-0 [mask-image:linear-gradient(180deg,#000_30%,transparent_100%)]" />
         <Stars count={70} seed={3} />
       </div>
@@ -137,19 +203,10 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* Curved 3D carousel. Sized in --u so the 1440px composition scales down smoothly. */}
-      <div className="relative mt-12 h-[300px] [--u:0.62px] md:mt-14 md:h-[400px] md:[--u:0.0694vw] min-[1440px]:[--u:1px] min-[1440px]:h-[500px]" style={{ perspective: "1400px" }}>
-        <div data-hero-stage className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center [gap:calc(var(--u)*25)]" style={{ transformStyle: "preserve-3d" }}>
-          {stage.map((c, i) => (
-            <div
-              key={i}
-              data-hero-card
-              className="shrink-0 overflow-hidden rounded-[22px] border border-white/10 shadow-[0_30px_80px_-30px_rgb(0_0_0/0.8)] will-change-transform"
-              style={{ width: `calc(var(--u) * ${c.w})`, height: `calc(var(--u) * ${c.h})`, transform: `rotateY(${c.r}deg)` }}
-            >
-              <Media kind="portrait" hue={c.hue} className="size-full" alt={`Showcase video ${i + 1}`} />
-            </div>
-          ))}
+      {/* Draggable carousel (drag with mouse or finger, or use the arrow keys) */}
+      <div data-intro="stage" className="relative mt-12 md:mt-14">
+        <div data-hero-stage>
+          <HeroCarousel items={showcase} />
         </div>
       </div>
 

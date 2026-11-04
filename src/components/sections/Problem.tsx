@@ -142,10 +142,15 @@ function ConsistencyPanel() {
 export default function Problem() {
   const panels = [<ViewsPanel key="v" />, <GrowthPanel key="g" />, <ConsistencyPanel key="c" />];
   return (
-    <section className="relative isolate overflow-hidden py-20 md:py-[120px] lg:pt-[180px]" aria-labelledby="problem-title">
-      <div aria-hidden className="absolute inset-x-0 top-0 -z-10 h-[420px]">
-        <div className="absolute left-1/2 top-0 h-full w-[min(1100px,100%)] -translate-x-1/2 [mask-image:radial-gradient(60%_80%_at_50%_0%,#000,transparent)] [background:linear-gradient(180deg,rgb(190_72_24/0.28),transparent)]" />
-        <Stars count={40} seed={11} fadeBottom />
+    <section className="relative isolate overflow-x-clip py-20 md:py-[120px] lg:pt-[180px]" aria-labelledby="problem-title">
+      {/* No glow box here on purpose: the light comes from the hero's bottom glow, which spills into this
+          section, so there is no edge where one section's background ends and the next begins.
+          Stars fade in and out so the field has no hard top or bottom line either. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[460px] [mask-image:linear-gradient(180deg,transparent_0%,#000_22%,#000_50%,transparent_100%)]"
+      >
+        <Stars count={40} seed={11} />
       </div>
 
       <div className="container-x">
