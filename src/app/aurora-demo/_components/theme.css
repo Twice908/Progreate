@@ -1,0 +1,179 @@
+/*
+ * Lime and glass theme for the aurora demo. Everything is scoped by class name, so it can't affect
+ * the live site's orange pages. The glass is the same recipe as the hero's right-column card.
+ */
+@layer components {
+  .glass {
+    border-radius: 16px;
+    border: 1px solid rgb(255 255 255 / 0.1);
+    background-color: rgb(0 0 0 / 0.4);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
+
+  /* For surfaces inside a glass card: one blur per stack is enough, and blur is expensive. */
+  .glass-inset {
+    border-radius: 10px;
+    border: 1px solid rgb(255 255 255 / 0.07);
+    background-color: rgb(255 255 255 / 0.04);
+  }
+
+  .glass-featured {
+    border-color: rgb(200 255 46 / 0.6);
+    background-image: linear-gradient(180deg, rgb(200 255 46 / 0.12) 0%, transparent 55%);
+  }
+
+  /* Soft lime glow rising from the bottom edge of a card */
+  .glass-glow {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+  }
+  .glass-glow::after {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset: auto 0 0;
+    z-index: -1;
+    height: 40%;
+    background: radial-gradient(60% 100% at 50% 100%, rgb(200 255 46 / 0.14) 0%, transparent 100%);
+  }
+
+  /* Border light that spreads outward from a point. GlowGroup sets the variables on scroll. */
+  .glow-card {
+    position: relative;
+    box-shadow:
+      0 0 36px -6px rgb(200 255 46 / calc(var(--glow-outer, 0) * 0.45)),
+      inset 0 0 28px -14px rgb(200 255 46 / calc(var(--glow-outer, 0) * 0.5));
+  }
+  .glow-card::before {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: inherit;
+    padding: 1.5px;
+    background: radial-gradient(
+      circle var(--glow-radius, 0px) at var(--glow-x, 50%) var(--glow-y, 0%),
+      rgb(200 255 46 / 0.75) 0%,
+      rgb(200 255 46 / 0.75) calc(100% - 80px),
+      #f4ffd0 calc(100% - 24px),
+      transparent 100%
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box exclude,
+      linear-gradient(#000 0 0);
+  }
+
+  .text-aurora-grad {
+    background-image: linear-gradient(180deg, #efffb0 0%, #a4dc14 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .btn-lime {
+    padding: 0.625rem 1.5rem 0.625rem 2rem;
+    color: #0a0f03;
+    background-image: linear-gradient(180deg, #e0ff7a 0%, #b4ec1e 100%);
+    box-shadow:
+      inset 0 -2px 2px 0 rgb(255 255 255 / 0.45),
+      0 0 0 1px rgb(200 255 46 / 0.35),
+      0 10px 30px -10px rgb(200 255 46 / 0.5);
+  }
+  .btn-lime:hover {
+    filter: brightness(1.08);
+  }
+
+  .btn-glass {
+    padding: 0.625rem 2rem;
+    color: rgb(255 255 255 / 0.85);
+    border: 1px solid rgb(200 255 46 / 0.5);
+    background-color: rgb(0 0 0 / 0.4);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
+  .btn-glass:hover {
+    background-color: rgb(255 255 255 / 0.1);
+  }
+
+  /* Headings and intro copy sit straight on the aurora: a dark halo keeps them clear of the lines. */
+  .aurora-theme .t-h1,
+  .aurora-theme .t-h2,
+  .aurora-theme .t-lead {
+    text-shadow:
+      0 0 24px rgb(4 6 4 / 0.9),
+      0 0 6px rgb(4 6 4 / 0.6);
+  }
+  .aurora-theme .t-lead {
+    color: rgb(255 255 255 / 0.78);
+  }
+}
+
+/* Hero pipeline card: light moves through the steps in turn, on a shared 3s loop. */
+.pipeline-step {
+  animation: pipeline-step 3s ease-in-out infinite;
+}
+.pipeline-pulse {
+  stroke-dasharray: 36 600;
+  animation: pipeline-pulse 3s linear infinite;
+}
+.pipeline-dot {
+  animation: pipeline-dot 1.5s ease-in-out infinite;
+}
+.pipeline-bar {
+  transform-origin: center;
+  animation: pipeline-bar 1.4s ease-in-out infinite alternate;
+}
+
+@keyframes pipeline-step {
+  0%,
+  45%,
+  100% {
+    border-color: rgb(255 255 255 / 0.07);
+    box-shadow: 0 0 0 0 rgb(200 255 46 / 0);
+  }
+  15% {
+    border-color: rgb(200 255 46 / 0.65);
+    box-shadow: 0 0 22px -6px rgb(200 255 46 / 0.55);
+  }
+}
+@keyframes pipeline-pulse {
+  from {
+    stroke-dashoffset: 36;
+  }
+  to {
+    stroke-dashoffset: -600;
+  }
+}
+@keyframes pipeline-dot {
+  50% {
+    opacity: 0.35;
+  }
+}
+@keyframes pipeline-bar {
+  from {
+    transform: scaleY(0.45);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pipeline-step,
+  .pipeline-pulse,
+  .pipeline-dot,
+  .pipeline-bar {
+    animation: none;
+  }
+  .pipeline-pulse {
+    stroke-dasharray: none;
+    opacity: 0.5;
+  }
+}
