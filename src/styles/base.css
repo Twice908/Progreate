@@ -1,0 +1,313 @@
+/* Tokens, reset, type and the handful of shared primitives. */
+
+:root {
+  /* Animated by the motion layer as the page moves from one growth medium to the next. */
+  --bg: #06794e;
+  --ink: #f6f1df;
+
+  --margin: clamp(16px, 2.4vw, 44px);
+  --gap: clamp(12px, 1.4vw, 24px);
+  --bar-h: clamp(56px, 7svh, 72px);
+
+  --f-display: var(--font-display), "Times New Roman", Times, serif;
+  --f-body: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --f-mono: var(--font-mono), ui-monospace, "SF Mono", Menlo, monospace;
+
+  --t-label: clamp(0.6875rem, 0.64rem + 0.16vw, 0.8125rem);
+  --t-body: clamp(1rem, 0.95rem + 0.22vw, 1.1875rem);
+  --t-lede: clamp(1.125rem, 0.98rem + 0.72vw, 1.75rem);
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-io: cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  /* No double-tap zoom: tapping the cell repeatedly is the whole point. */
+  touch-action: manipulation;
+  background: var(--bg);
+  /* The scrollbar takes on each growth medium along with everything else. */
+  scrollbar-color: var(--ink) var(--bg);
+  scrollbar-width: thin;
+}
+
+body {
+  margin: 0;
+  min-height: 100svh;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: var(--t-body);
+  line-height: 1.45;
+  overflow-x: clip;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+p,
+ul,
+ol,
+dl,
+dd,
+dt,
+figure {
+  margin: 0;
+  padding: 0;
+  font: inherit;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  border-radius: 0;
+  appearance: none;
+}
+
+button {
+  cursor: pointer;
+}
+
+canvas,
+svg {
+  display: block;
+}
+
+::selection {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+/* Browser autofill must not paint a pale box into the middle of a sentence. */
+input:-webkit-autofill,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--ink);
+  caret-color: var(--ink);
+  transition: background-color 99999s;
+}
+
+:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+main:focus {
+  outline: none;
+}
+
+/* -------------------------------------------------------------------------- */
+
+.label {
+  font-family: var(--f-mono);
+  font-size: var(--t-label);
+  line-height: 1.3;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.skip {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 100;
+  padding: 10px 16px;
+  background: var(--ink);
+  color: var(--bg);
+  font-family: var(--f-mono);
+  font-size: var(--t-label);
+  transform: translateY(-200%);
+}
+
+.skip:focus-visible {
+  transform: none;
+}
+
+.lvh-probe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 100lvh;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Masks for type that rises into place. Gloock's descenders fall well outside a tight line box. */
+.word {
+  display: inline-block;
+  vertical-align: top;
+  padding-bottom: 0.22em;
+  margin-bottom: -0.22em;
+  clip-path: inset(-0.06em -0.14em 0 -0.14em);
+}
+
+.word > span {
+  display: block;
+}
+
+.ln-mask {
+  padding-bottom: 0.2em;
+  margin-bottom: -0.2em;
+}
+
+/* Buttons ------------------------------------------------------------------ */
+
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 1.25em;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--bg);
+  font-family: var(--f-mono);
+  font-size: var(--t-label);
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  isolation: isolate;
+  border: 1px solid var(--ink);
+  transition: color 0.45s var(--ease-out);
+}
+
+/* A cell swells from the bottom edge to fill the button. */
+.btn::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  width: 130%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--bg);
+  transform: translate(-50%, 0) scale(0.5);
+  transition: transform 0.6s var(--ease-out);
+  z-index: -1;
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--ink);
+}
+
+.btn--ghost::before {
+  background: var(--ink);
+}
+
+.btn--big {
+  min-height: 60px;
+  padding: 0 2em;
+  font-size: clamp(0.8125rem, 0.72rem + 0.4vw, 1.0625rem);
+}
+
+@media (hover: hover) {
+  .btn:hover {
+    color: var(--ink);
+  }
+
+  .btn:hover::before {
+    transform: translate(-50%, -62%) scale(1);
+  }
+
+  .btn--ghost:hover {
+    color: var(--bg);
+  }
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+/* Without JS, each section simply carries its own colour. Values mirror src/lib/mediums.ts. */
+html:not(.js) [data-medium="tcbs"] {
+  --bg: #06794e;
+  --ink: #f6f1df;
+}
+
+html:not(.js) [data-medium="nutrient"] {
+  --bg: #f3eddc;
+  --ink: #0e2a1e;
+}
+
+html:not(.js) [data-medium="emb"] {
+  --bg: #1b0b2e;
+  --ink: #efe8ff;
+}
+
+html:not(.js) [data-medium="sheen"] {
+  --bg: #4be3a0;
+  --ink: #07261a;
+}
+
+html:not(.js) [data-medium="blood"] {
+  --bg: #c4122f;
+  --ink: #ffefe3;
+}
+
+html:not(.js) [data-medium="bromo"] {
+  --bg: #1c2bd6;
+  --ink: #eef0ff;
+}
+
+html:not(.js) [data-medium="macconkey"] {
+  --bg: #ff4fa3;
+  --ink: #2b0a2e;
+}
+
+html:not(.js) [data-medium="sabouraud"] {
+  --bg: #dde45a;
+  --ink: #1c2405;
+}
+
+html:not(.js) [data-medium="mannitol"] {
+  --bg: #f7b500;
+  --ink: #1e1405;
+}
+
+html:not(.js) [data-medium="chocolate"] {
+  --bg: #3a1f14;
+  --ink: #f3e3cf;
+}
+
+html:not(.js) [data-medium] {
+  background: var(--bg);
+  color: var(--ink);
+}

@@ -1,64 +1,70 @@
 import type { Metadata, Viewport } from "next";
-import { Bricolage_Grotesque, Hanken_Grotesk } from "next/font/google";
-import "./globals.css";
-import SmoothScroll from "@/components/providers/SmoothScroll";
-import Navbar from "@/components/layout/Navbar";
-import CtaFooter from "@/components/layout/CtaFooter";
-import { brand } from "@/lib/data";
+import { DM_Mono, Gloock, Schibsted_Grotesk } from "next/font/google";
+import { site } from "@/content/site";
+import { mediums } from "@/lib/mediums";
+import "@/styles/base.css";
+import "@/styles/chrome.css";
+import "@/styles/sections.css";
 
-// Body / UI face (same as the template).
-const bricolage = Bricolage_Grotesque({
-  variable: "--font-bricolage",
+const display = Gloock({
+  weight: "400",
   subsets: ["latin"],
+  variable: "--font-display",
   display: "swap",
 });
 
-// Stand-in for PP Neue Montreal (paid, Pangram Pangram). To use the licensed files, replace this
-// with next/font/local and keep the `--font-display-face` variable name.
-const displayFace = Hanken_Grotesk({
-  variable: "--font-display-face",
+const body = Schibsted_Grotesk({
   subsets: ["latin"],
+  variable: "--font-body",
+  display: "swap",
+});
+
+const mono = DM_Mono({
+  weight: ["400", "500"],
+  subsets: ["latin"],
+  variable: "--font-mono",
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: `${brand.name} — Short-form Video Editing Agency`,
-  description:
-    "We turn your raw clips into high-performing Reels, TikToks, and Shorts — designed to grab attention, boost engagement, and grow your audience faster.",
+  metadataBase: new URL(`https://${site.domain}`),
+  title: site.title,
+  description: site.description,
+  openGraph: {
+    title: site.title,
+    description: site.description,
+    url: "/",
+    siteName: site.name,
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: site.title,
+    description: site.description,
+  },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#090401",
-  colorScheme: "dark",
+  themeColor: mediums.tcbs.bg,
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
-/**
- * Runs before first paint (and before React). Opts into the "hide until revealed" CSS only when motion
- * is allowed, and arms a failsafe: if hydration hasn't marked motion ready within 3s, drop the class so
- * everything shows (the GSAP setup then skips itself via `__motionSkipped`).
- */
-const motionGate = `(function(w,d){try{
-var h=d.documentElement;
-if(!w.matchMedia('(prefers-reduced-motion: no-preference)').matches)return;
-h.classList.add('motion');
-w.__motionTimer=w.setTimeout(function(){
-if(!w.__motionReady){w.__motionSkipped=true;h.classList.remove('motion');}
-},3000);
-}catch(e){}})(window,document);`;
+/** Runs before first paint so styles can branch on JS and motion preference without a flash. */
+const preflight = `(function(d,w){var h=d.documentElement;h.classList.add('js');try{if(w.matchMedia('(prefers-reduced-motion: reduce)').matches)h.classList.add('calm')}catch(e){}})(document,window);`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    // suppressHydrationWarning: the gate script above adds a class to <html> before React hydrates.
-    <html lang="en" suppressHydrationWarning className={`${bricolage.variable} ${displayFace.variable} antialiased`}>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${display.variable} ${body.variable} ${mono.variable}`}
+    >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: motionGate }} />
+        <script dangerouslySetInnerHTML={{ __html: preflight }} />
       </head>
-      <body className="relative flex min-h-screen flex-col bg-bg">
-        <SmoothScroll />
-        <Navbar />
-        <main className="flex-1">{children}</main>
-        <CtaFooter />
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
